@@ -197,18 +197,51 @@ static uint64_t hash(const object* self) {
   return ret;
 }
 
+static void merge(struct entry* arr, size_t l, size_t m, size_t r) {
+  register size_t i, j, k;
+  size_t n1 = m - l + 1;
+  size_t n2 = r - m;
+
+  struct entry* L = (struct entry*)malloc(n1*sizeof(struct entry));
+  struct entry* R = (struct entry*)malloc(n2*sizeof(struct entry));
+
+  for(i = 0; i < n1; ++i)
+    L[i] = arr[l + i];
+  for(j = 0; j < n2; ++j)
+    R[j] = arr[m + 1 + j];
+  
+  i = 0, j = 0, k = 0;
+  while(i < n1 && j < n2) {
+    if(L[i].hash <= R[j].hash)
+      arr[k++] = L[i++];
+    else
+      arr[k++] = R[j++];
+  }
+
+  while(i < n1)
+    arr[k++] = L[i++];
+  while(j < n2)
+    arr[k++] = R[j++];
+}
+
+static void merge_sort(struct entry* arr, size_t l, size_t r) {
+  if(l < r) {
+    size_t m = l+(r-l)/2;
+    merge_sort(arr, l, m);
+    merge_sort(arr, m+1, r);
+
+    merge(arr, l, m, r);
+  }
+}
+
 void add_pair(object* self, const object* key, const object* value) {
   ++self->dict.size;
+  printf("%zu", self->dict.size);
   self->dict.data = realloc(self->dict.data, self->dict.size * sizeof(struct entry));
-  register size_t size = self->dict.size;
-  uint64_t hashed = hash(key);
-  register size_t i;
-  register struct entry* arr = self->dict.data;
-  for(i = size-1; (i >= 0) && (arr[i].hash > hashed); --i)
-    arr[i+1] = arr[i];
-  self->dict.data[i].hash = hashed;
-  self->dict.data[i].key = key;
-  self->dict.data[i].value = value;
+  self->dict.data[self->dict.size-1].hash = hash(key);
+  self->dict.data[self->dict.size-1].key = key;
+  self->dict.data[self->dict.size-1].value = value;
+  merge_sort(self->dict.data, 0, self->dict.size);
 }
 
 object* new_dict(const size_t pair_num, ...) {
@@ -225,6 +258,9 @@ object* new_dict(const size_t pair_num, ...) {
 }
 
 int main() {
-  object* o = new_dict(1, new_str("hahaha"), new_int(5));
-  printf("%#lx\n", o->dict.data[0].hash);
+  object* o = new_dict(2, new_str("haha"), new_int(5), new_str("banana"), new_int(7));
+  printf("{%#lx : %s = %ld\n%#lx : %s = %ld}\n",
+  o->dict.data[0].hash, o->dict.data[0].key->string.data, o->dict.data[0].value->int64,
+  o->dict.data[1].hash, o->dict.data[1].key->string.data, o->dict.data[1].value->int64
+  );
 }
