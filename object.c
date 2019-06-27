@@ -9,6 +9,10 @@
 static uint64_t hash(const object*);
 static uint64_t hash_array(const object*);
 static uint64_t hash_dict(const object*);
+struct tostring_pattern {
+  char is_printable[8];
+  tostring_function tostring;
+};
 
 typedef struct object {
   union {
@@ -277,10 +281,27 @@ char* str_obj(const object* self) {
     sprintf(ret, "%g" , self->float64);
     return ret;
   case T_STR:
-    len = self->string.len + 1;
+    len = self->string.len + 3;
     ret = calloc(len,sizeof(char));
-    sprintf(ret, "%s", self->string.data);
+    sprintf(ret, "\"%s\"", self->string.data);
     return ret;
+  case T_PTR:
+    ; /* Unless there is an empty statement, due to the standard, the compiler throws
+      "a label can only be part of a statement and a declaration is not a statement".
+      Because "case" is a label and declaration of a new variable is not a statement. */
+    struct tostring_pattern* pattern = self->pointer.data;
+    puts(pattern->is_printable);
+    char* tmp = NULL;
+    if(!memcmp(pattern->is_printable, "strfunc", 8))
+      tmp = pattern->tostring(self->pointer.data, self->pointer.size);
+    if(tmp == NULL) {
+      len = snprintf(NULL, 0, "<pointer to %p>", self->pointer.data) + 1;
+      ret = calloc(len, sizeof(char));
+      sprintf(ret, "<pointer to %p>", self->pointer.data);
+      return ret;
+    }
+    return tmp;
+
   case T_ARR:
     len = sizeof("[");
     ret = calloc(len,sizeof(char));
@@ -302,9 +323,9 @@ char* str_obj(const object* self) {
     sprintf(ret, "%s%c", ret, ']');
     return ret;
   case T_TAB:
-    len = sizeof("[");
+    len = sizeof("{");
     ret = calloc(len,sizeof(char));
-    sprintf(ret, "%s", "[");
+    sprintf(ret, "%s", "{");
     for(size_t i = 0; i < self->dict.size; ++i) {
       char* tmp_key = str_obj(self->dict.data[i].key);
       char* tmp_val = str_obj(self->dict.data[i].value);
@@ -321,13 +342,37 @@ char* str_obj(const object* self) {
     }
     ++len;
     ret = realloc(ret, len * sizeof(char));
-    sprintf(ret, "%s%c", ret, ']');
+    sprintf(ret, "%s%c", ret, '}');
     return ret;
   }
 
 }
 
+struct hah {
+  char printable[8];
+  tostring_function tostring;
+  size_t num;
+  int arr[];
+};
+
+char* string_hah(void* __self, size_t size) {
+  struct hah* self = __self;
+  char* ret = NULL;
+  size_t len = 1;
+  for(size_t i = 0; i < self->num; ++i) {
+    len += snprintf(NULL, 0, "%d ", self->arr[i]);
+    ret = realloc(ret, len * sizeof(char));
+    sprintf(ret, "%s%d ", ret, self->arr[i]);
+  }
+  return ret;
+}
+
 int main() {
-  object* o = new_dict(2, new_int(5), new_str("ahah"), new_str("hehe"), new_num(3.14159));
-  printf("%s\n", str_obj(o));
+  struct hah* arr = calloc(1,sizeof(struct hah) + 6 * sizeof(int));
+  printf("%d\n", arr->arr[4]);
+  arr->num = 5;
+  memcpy(arr->printable, "strfunc", 8);
+  arr->tostring = string_hah;
+  object* o = new_ptr(arr, sizeof(arr) + 6 * sizeof(int));
+  puts(str_obj(o));
 }

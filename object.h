@@ -4,7 +4,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define foreachA(v,a) \
+    size_t __iteration_holder = 0; \
+    object* __array_holder = (a); \
+    object* v = __array_holder->array.data[0]; \
+    for(; __iteration_holder < __array_holder->array.size; v = __array_holder->array.data[++__iteration_holder])
+
 typedef struct object object;
+typedef char* (*tostring_function)(void*,size_t);
 
 const char* obj_type(const object*);
 object* new_int(const int64_t);
