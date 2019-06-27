@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
+#include <inttypes.h>
 #include "object.h"
 
 static uint64_t hash(const object*);
@@ -236,12 +237,11 @@ static void merge_sort(struct entry* arr, size_t l, size_t r) {
 
 void add_pair(object* self, const object* key, const object* value) {
   ++self->dict.size;
-  printf("%zu", self->dict.size);
   self->dict.data = realloc(self->dict.data, self->dict.size * sizeof(struct entry));
   self->dict.data[self->dict.size-1].hash = hash(key);
   self->dict.data[self->dict.size-1].key = key;
   self->dict.data[self->dict.size-1].value = value;
-  merge_sort(self->dict.data, 0, self->dict.size);
+  merge_sort(self->dict.data, 0, self->dict.size-1);
 }
 
 object* new_dict(const size_t pair_num, ...) {
@@ -257,10 +257,77 @@ object* new_dict(const size_t pair_num, ...) {
   return ret;
 }
 
+char* str_obj(const object* self) {
+  char* ret = NULL;
+  size_t len = 0;
+  switch(self->type) {
+  case T_NIL:
+    len = sizeof("null");
+    ret = calloc(len,sizeof(char));
+    sprintf(ret, "%s", "null");
+    return ret;
+  case T_I64:
+    len = snprintf(NULL, 0, "%lu", self->int64) + 1;
+    ret = calloc(len,sizeof(char));
+    sprintf(ret, "%lu" , self->int64);
+    return ret;
+  case T_F64:
+    len = snprintf(NULL, 0, "%g", self->float64) + 1;
+    ret = calloc(len,sizeof(char));
+    sprintf(ret, "%g" , self->float64);
+    return ret;
+  case T_STR:
+    len = self->string.len + 1;
+    ret = calloc(len,sizeof(char));
+    sprintf(ret, "%s", self->string.data);
+    return ret;
+  case T_ARR:
+    len = sizeof("[");
+    ret = calloc(len,sizeof(char));
+    sprintf(ret, "%s", "[");
+    for(size_t i = 0; i < self->array.size; ++i) {
+      char* tmp = str_obj(self->array.data[i]);
+      len += strlen(tmp);
+      ret = realloc(ret, len * sizeof(char));
+      sprintf(ret, "%s%s", ret, tmp);
+      if(i != self->array.size-1) {
+        len += 2;
+        ret = realloc(ret, len * sizeof(char));
+        sprintf(ret, "%s%s", ret, ", ");
+      }
+      free(tmp);
+    }
+    ++len;
+    ret = realloc(ret, len * sizeof(char));
+    sprintf(ret, "%s%c", ret, ']');
+    return ret;
+  case T_TAB:
+    len = sizeof("[");
+    ret = calloc(len,sizeof(char));
+    sprintf(ret, "%s", "[");
+    for(size_t i = 0; i < self->dict.size; ++i) {
+      char* tmp_key = str_obj(self->dict.data[i].key);
+      char* tmp_val = str_obj(self->dict.data[i].value);
+      len += strlen(tmp_key) + strlen(tmp_val) + sizeof(":") - 1;
+      ret = realloc(ret, len * sizeof(char));
+      sprintf(ret, "%s%s:%s", ret, tmp_key, tmp_val);
+      if(i != self->dict.size-1) {
+        len += 2;
+        ret = realloc(ret, len * sizeof(char));
+        sprintf(ret, "%s%s", ret, ", ");
+      }
+      free(tmp_key);
+      free(tmp_val);
+    }
+    ++len;
+    ret = realloc(ret, len * sizeof(char));
+    sprintf(ret, "%s%c", ret, ']');
+    return ret;
+  }
+
+}
+
 int main() {
-  object* o = new_dict(2, new_str("haha"), new_int(5), new_str("banana"), new_int(7));
-  printf("{%#lx : %s = %ld\n%#lx : %s = %ld}\n",
-  o->dict.data[0].hash, o->dict.data[0].key->string.data, o->dict.data[0].value->int64,
-  o->dict.data[1].hash, o->dict.data[1].key->string.data, o->dict.data[1].value->int64
-  );
+  object* o = new_dict(2, new_int(5), new_str("ahah"), new_str("hehe"), new_num(3.14159));
+  printf("%s\n", str_obj(o));
 }

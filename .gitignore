@@ -5,3 +5,5 @@ object
 .vscode/settings.json
 .vscode/ipch/cebdfb5cbcf7361/mmap_address.bin
 .vscode/ipch/cebdfb5cbcf7361/stdarg.ipch
+.vscode/launch.json
+.vscode/tasks.json
