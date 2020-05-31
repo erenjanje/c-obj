@@ -446,3 +446,5 @@ int main() {
 	obj.insert(o->array.data[2], obj.i64(4));
 	return 0;
 }
+
+#undef massert
