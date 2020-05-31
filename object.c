@@ -377,13 +377,43 @@ static void insert_generic(object* self, ...) {
 	break;
 	
 	default:
-		massert(0, "TypeError: Cannot add something to a(n) %s", str_obj(self));
+		massert(0, "TypeError: Cannot add something to a%c %s", ((self->type == T_I64) || (self->type == T_ARR)) ? 'n' : '\0' , obj_type(self));
 	break;
 	}
 }
 
 static void del_obj(object* self) {
-	
+	massert(self, "NullError: self is not a valid object.");
+  switch(self->type) {
+  case T_NIL:
+  case T_I64:
+  case T_F64:
+    free(self);
+  break;
+  case T_STR:
+    free(self->string.data);
+    free(self);
+  break;
+  case T_PTR:
+    free(self->pointer.data);
+    free(self);
+  break;
+  case T_ARR:
+    for(size_t i = 0; i < self->array.size; ++i)
+      del_obj(self->array.data[i]);
+    free(self);
+  break;
+  case T_TAB:
+    for(size_t i = 0; i < self->dict.size; ++i) {
+      del_obj(self->dict.data[i].key);
+      del_obj(self->dict.data[i].value);
+    }
+    free(self);
+  break;
+  default:
+    massert(0,"TypeError: Object type is not valid.");
+  break;
+  }
 }
 
 struct {
@@ -411,8 +441,8 @@ struct {
 };
 
 int main() {
-	object* o = obj.array(6, obj.str("Hello"), obj.str("World!"), obj.i64(56), obj.f64(3.141592),\
-		obj.dict(1, obj.str("Array"), obj.str("Ception")), obj.ptr(malloc(1),1));
-	puts(obj.repr(o));
+	object* o = obj.array(5, obj.str("Hello"), obj.str("World!"), obj.i64(56), obj.f64(3.141592),\
+		obj.dict(1, obj.str("Array"), obj.str("Ception")));
+	obj.insert(o->array.data[2], obj.i64(4));
 	return 0;
 }
