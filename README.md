@@ -4,13 +4,13 @@ This is a basic c library for dynamic object handling.
 
 ## Types
 
-**Nil:** A type for non-existent variables. It's Like NULL in C, None in Python, nil in Lua etc.
-**Integer:** A 64 bit integer for basic integer holding.
-**Float:** A double for basic floating-point number holding.
-**String:** A string with size. So it can hold strings with embedded nulls (aka \0)
-**Pointer:** A pointer holder. It is implemented with void*. So it have to be casted before most of the usage cases.
-**Array:** A minimal heterogenous array implementation with basic functions.
-**Dict:** A minimal associative array implemented with Jenkins hash function, merge sort and binary search.
+**Nil:** A type for non-existent variables. It's Like NULL in C, None in Python, nil in Lua etc.  
+**Integer:** A 64 bit integer for basic integer holding.  
+**Float:** A double for basic floating-point number holding.  
+**String:** A string with size. So it can hold strings with embedded nulls (aka \0)  
+**Pointer:** A pointer holder. It is implemented with void*. So it have to be casted before most of the usage cases.  
+**Array:** A minimal heterogenous array implementation with basic functions.  
+**Dict:** A minimal associative array implemented with Jenkins hash function, merge sort and binary search.  
 
 ## Basic Usage
 
