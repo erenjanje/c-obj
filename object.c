@@ -7,11 +7,11 @@
 #include <unistd.h>
 #include "object.h"
 #define massert(cond, msg, args...) \
-		if(!(cond)) { \
-			fprintf(stderr, "Assertment failed in file %s in function %s at %d:\n--", __FILE__, __func__, __LINE__); \
-			fprintf(stderr, msg, ##args); \
-			exit(1); \
-		}
+    if(!(cond)) { \
+      fprintf(stderr, "Assertment failed in file %s in function %s at %d:\n--", __FILE__, __func__, __LINE__); \
+      fprintf(stderr, msg, ##args); \
+      exit(1); \
+    }
 
 static uint64_t hash(const object*);
 static uint64_t hash_array(const object*);
@@ -54,7 +54,7 @@ typedef struct object {
 } object;
 
 static const char* obj_type(const object* obj) {
-	massert(obj, "NullError: obj is not a valid object.");
+  massert(obj, "NullError: obj is not a valid object.");
   switch(obj->type) {
   case T_NIL:
     return "null";
@@ -70,13 +70,13 @@ static const char* obj_type(const object* obj) {
     return "array";
   case T_TAB:
     return "dict";
-	default:
-		return NULL;
+  default:
+    return NULL;
   }
 }
 
 static object* new_int(const int64_t i) {
-	object* ret = (object*)calloc(1,sizeof(object));
+  object* ret = (object*)calloc(1,sizeof(object));
   massert(ret, "MemoryError: Cannot allocate space for object.");
   ret->int64 = i;
   ret->type = T_I64;
@@ -84,7 +84,7 @@ static object* new_int(const int64_t i) {
 }
 
 static object* new_num(const double d) {
-	object* ret = (object*)calloc(1,sizeof(object));
+  object* ret = (object*)calloc(1,sizeof(object));
   massert(ret, "MemoryError: Cannot allocate space for object.");
   ret->float64 = d;
   ret->type = T_F64;
@@ -92,7 +92,7 @@ static object* new_num(const double d) {
 }
 
 static object* new_str(const char* s) {
-	object* ret = (object*)calloc(1,sizeof(object));
+  object* ret = (object*)calloc(1,sizeof(object));
   massert(ret, "MemoryError: Cannot allocate space for object.");
   ret->string.len = strlen(s);
   ret->string.data = (char*)calloc(ret->string.len, sizeof(char));
@@ -102,11 +102,11 @@ static object* new_str(const char* s) {
 }
 
 static object* new_ptr(const void* data, const size_t size) {
-	massert(data, "NullError: Given data is not valid.");
-	object* ret = (object*)calloc(1,sizeof(object));
+  massert(data, "NullError: Given data is not valid.");
+  object* ret = (object*)calloc(1,sizeof(object));
   massert(ret, "MemoryError: Cannot allocate space for object.");
   ret->pointer.size = size;
-	ret->pointer.data = (void*)malloc(ret->pointer.size);
+  ret->pointer.data = (void*)malloc(ret->pointer.size);
   massert(ret->pointer.data, "MemoryError: Cannot allocate space for pointer.");
   memcpy(ret->pointer.data, data, ret->pointer.size);
   ret->type = T_PTR;
@@ -114,17 +114,17 @@ static object* new_ptr(const void* data, const size_t size) {
 }
 
 static void add_elem(object* self, object* elem) {
-	massert(self, "NullError: self is not a valid object.");
-	massert(elem, "NullError: element is not a valid object.");
+  massert(self, "NullError: self is not a valid object.");
+  massert(elem, "NullError: element is not a valid object.");
 
   ++self->array.size;
-	self->array.data = (object**)realloc(self->array.data, self->array.size * sizeof(object*));
+  self->array.data = (object**)realloc(self->array.data, self->array.size * sizeof(object*));
   massert(self->array.data, "MemoryError: Cannot expand the element array.");
   self->array.data[self->array.size-1] = elem;
 }
 
 static object* new_arr(const size_t elem_num, ...) {
-	object* ret = (object*)calloc(1,sizeof(object));
+  object* ret = (object*)calloc(1,sizeof(object));
   massert(ret, "MemoryError: Cannot allocate space for object.");
   ret->type = T_ARR;
   va_list args;
@@ -138,7 +138,7 @@ static object* new_arr(const size_t elem_num, ...) {
 }
 
 static uint64_t hash_array(const object* self) {
-	massert(self, "NullError: self is not a valid object.");
+  massert(self, "NullError: self is not a valid object.");
   uint64_t ret = 0;
   size_t len = self->array.size;
   const object** ptr = (const object**)self->array.data;
@@ -156,7 +156,7 @@ static uint64_t hash_array(const object* self) {
 }
 
 static uint64_t hash_dict(const object* self) {
-	massert(self, "NullError: self is not a valid object.");
+  massert(self, "NullError: self is not a valid object.");
   uint64_t ret = 0;
   size_t len = self->dict.size;
   const struct entry* ptr = self->dict.data;
@@ -174,7 +174,7 @@ static uint64_t hash_dict(const object* self) {
 }
 
 static uint64_t hash(const object* self) {
-	massert(self, "NullError: self is not a valid object.");
+  massert(self, "NullError: self is not a valid object.");
   uint64_t ret = 0;
   size_t len = 0;
   const char* ptr = NULL;
@@ -255,12 +255,12 @@ static void merge_sort(struct entry* arr, size_t l, size_t r) {
 }
 
 static void add_pair(object* self, object* key, object* value) {
-	massert(self, "NullError: self is not a valid object.");
-	massert(key, "NullError: key is not a valid object.");
-	massert(value, "NullError: value is not a valid object.");
+  massert(self, "NullError: self is not a valid object.");
+  massert(key, "NullError: key is not a valid object.");
+  massert(value, "NullError: value is not a valid object.");
   ++self->dict.size;
   self->dict.data = (struct entry*)realloc(self->dict.data, self->dict.size * sizeof(struct entry));
-	massert(self->dict.data, "MemoryError: Cannot expand the dictionary.");
+  massert(self->dict.data, "MemoryError: Cannot expand the dictionary.");
   self->dict.data[self->dict.size-1].hash = hash(key);
   self->dict.data[self->dict.size-1].key = key;
   self->dict.data[self->dict.size-1].value = value;
@@ -268,7 +268,7 @@ static void add_pair(object* self, object* key, object* value) {
 }
 
 static object* new_dict(const size_t pair_num, ...) {
-	object* ret = (object*)calloc(1,sizeof(object));
+  object* ret = (object*)calloc(1,sizeof(object));
   massert(ret, "MemoryError: Cannot allocate space for object.");
   ret->type = T_TAB;
   va_list args;
@@ -282,7 +282,7 @@ static object* new_dict(const size_t pair_num, ...) {
 }
 
 static char* str_obj(const object* self) {
-	massert(self, "NullError: self is not a valid object.");
+  massert(self, "NullError: self is not a valid object.");
   char* ret = NULL;
   size_t len = 0;
   switch(self->type) {
@@ -353,37 +353,37 @@ static char* str_obj(const object* self) {
     ret = realloc(ret, len * sizeof(char));
     sprintf(ret, "%s%c", ret, ']');
     return ret;
-	default:
-		return NULL;
+  default:
+    return NULL;
   }
 
 }
 
 static void insert_generic(object* self, ...) {
-	massert(self, "NullError: self is not a valid object.");
-	va_list args;
-	switch(self->type) {
-	case T_ARR:
-		va_start(args,self);
-		object* tmp = va_arg(args, object*);
-		add_elem(self, tmp);
-	break;
+  massert(self, "NullError: self is not a valid object.");
+  va_list args;
+  switch(self->type) {
+  case T_ARR:
+    va_start(args,self);
+    object* tmp = va_arg(args, object*);
+    add_elem(self, tmp);
+  break;
 
-	case T_TAB:
-		va_start(args,self);
-		object* tmp1 = va_arg(args, object*);
-		object* tmp2 = va_arg(args, object*);
-		add_pair(self, tmp1, tmp2);
-	break;
-	
-	default:
-		massert(0, "TypeError: Cannot add something to a%c %s", ((self->type == T_I64) || (self->type == T_ARR)) ? 'n' : '\0' , obj_type(self));
-	break;
-	}
+  case T_TAB:
+    va_start(args,self);
+    object* tmp1 = va_arg(args, object*);
+    object* tmp2 = va_arg(args, object*);
+    add_pair(self, tmp1, tmp2);
+  break;
+  
+  default:
+    massert(0, "TypeError: Cannot add something to a%c %s", ((self->type == T_I64) || (self->type == T_ARR)) ? 'n' : '\0' , obj_type(self));
+  break;
+  }
 }
 
 static void del_obj(object* self) {
-	massert(self, "NullError: self is not a valid object.");
+  massert(self, "NullError: self is not a valid object.");
   switch(self->type) {
   case T_NIL:
   case T_I64:
@@ -417,34 +417,35 @@ static void del_obj(object* self) {
 }
 
 struct {
-	const char* (*type)(const object*);
-	object* (*i64)(const int64_t);
-	object* (*f64)(const double);
-	object* (*str)(const char*);
-	object* (*ptr)(const void*, const size_t);
-	object* (*array)(const size_t, ...);
-	object* (*dict)(const size_t, ...);
-	void (*insert)(object*, ...);
-	char* (*repr)(const object*);
-	void (*delete)(object*);
+  const char* (*type)(const object*);
+  object* (*i64)(const int64_t);
+  object* (*f64)(const double);
+  object* (*str)(const char*);
+  object* (*ptr)(const void*, const size_t);
+  object* (*array)(const size_t, ...);
+  object* (*dict)(const size_t, ...);
+  void (*insert)(object*, ...);
+  char* (*repr)(const object*);
+  void (*delete)(object*);
 } obj = {
-	obj_type,
-	new_int,
-	new_num,
-	new_str,
-	new_ptr,
-	new_arr,
-	new_dict,
-	insert_generic,
-	str_obj,
+  obj_type,
+  new_int,
+  new_num,
+  new_str,
+  new_ptr,
+  new_arr,
+  new_dict,
+  insert_generic,
+  str_obj,
   del_obj
 };
 
 int main() {
-	object* o = obj.array(5, obj.str("Hello"), obj.str("World!"), obj.i64(56), obj.f64(3.141592),\
-		obj.dict(1, obj.str("Array"), obj.str("Ception")));
-	obj.insert(o->array.data[2], obj.i64(4));
-	return 0;
+  object* o = obj.array(5, obj.str("Hello"), obj.str("World!"), obj.i64(56), obj.f64(3.141592),\
+    obj.dict(1, obj.str("Array"), obj.str("Ception")));
+  obj.insert(o->array.data[4], obj.i64(4), obj.f64(2.71));
+  printf("%s\n", obj.repr(o));
+  return 0;
 }
 
 #undef massert
